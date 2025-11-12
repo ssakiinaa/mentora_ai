@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}New Goal - Mentora AI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen max-w-2xl mx-auto">
+  <h1 class="text-3xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3">
+    <svg class="w-8 h-8 text-[var(--accent-motivation)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+    </svg>
+    New Goal
+  </h1>
+
+  <form method="post" class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+    {% csrf_token %}
+    <div class="mb-6">
+      <label for="title" class="block text-sm font-medium text-[var(--text-primary)] mb-2">
+        Goal Title *
+      </label>
+      <input 
+        type="text" 
+        id="title" 
+        name="title" 
+        required
+        class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-motivation)] focus:ring-2 focus:ring-[var(--accent-motivation)] focus:outline-none"
+        placeholder="e.g., Learn Python, Run 5K, Read 20 books"
+      />
+    </div>
+
+    <div class="mb-6">
+      <label for="goal_type" class="block text-sm font-medium text-[var(--text-primary)] mb-2">
+        Goal Type *
+      </label>
+      <select 
+        id="goal_type" 
+        name="goal_type" 
+        required
+        class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-motivation)] focus:ring-2 focus:ring-[var(--accent-motivation)] focus:outline-none"
+      >
+        <option value="short">Short-term</option>
+        <option value="long">Long-term</option>
+      </select>
+    </div>
+
+    <div class="mb-6">
+      <label for="description" class="block text-sm font-medium text-[var(--text-primary)] mb-2">
+        Description *
+      </label>
+      <textarea 
+        id="description" 
+        name="description" 
+        rows="4"
+        required
+        class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-motivation)] focus:ring-2 focus:ring-[var(--accent-motivation)] focus:outline-none"
+        placeholder="Describe your goal in detail..."
+      ></textarea>
+    </div>
+
+    <div class="mb-6">
+      <label for="target_date" class="block text-sm font-medium text-[var(--text-primary)] mb-2">
+        Target Date (optional)
+      </label>
+      <input 
+        type="date" 
+        id="target_date" 
+        name="target_date"
+        class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-motivation)] focus:ring-2 focus:ring-[var(--accent-motivation)] focus:outline-none"
+      />
+    </div>
+
+    <div class="flex gap-4">
+      <button type="submit" class="bg-[var(--accent-motivation)] hover:opacity-90 text-white px-6 py-3 rounded-lg transition font-medium">
+        Create Goal
+      </button>
+      <a href="{% url 'goal_list' %}" class="bg-[var(--hover-bg)] hover:opacity-80 text-[var(--text-primary)] px-6 py-3 rounded-lg transition">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

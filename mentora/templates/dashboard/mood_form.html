@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Track Mood - Mentora AI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen max-w-2xl mx-auto">
+  <h1 class="text-3xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3">
+    <svg class="w-8 h-8 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+    </svg>
+    Track Your Mood
+  </h1>
+
+  <form method="post" class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+    {% csrf_token %}
+    
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-[var(--text-primary)] mb-4">
+        How are you feeling today?
+      </label>
+      <div class="grid grid-cols-4 gap-4">
+        {% for emoji, label in mood_choices %}
+        <label class="cursor-pointer">
+          <input type="radio" name="mood_emoji" value="{{ emoji }}" 
+                 {% if today_mood and today_mood.mood_emoji == emoji %}checked{% endif %}
+                 class="hidden peer">
+          <div class="bg-[var(--hover-bg)] hover:bg-[var(--border-color)] peer-checked:bg-[var(--accent-primary)] peer-checked:ring-2 peer-checked:ring-[var(--accent-primary)] rounded-lg p-4 text-center transition">
+            <div class="text-4xl mb-2">{{ emoji }}</div>
+            <div class="text-xs text-[var(--text-secondary)]">{{ label }}</div>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label for="mood_scale" class="block text-sm font-medium text-[var(--text-primary)] mb-2">
+        Mood Scale (1-10): <span id="scale-value" class="text-[var(--accent-primary)]">5</span>
+      </label>
+      <input 
+        type="range" 
+        id="mood_scale" 
+        name="mood_scale" 
+        min="1" 
+        max="10" 
+        value="{% if today_mood %}{{ today_mood.mood_scale }}{% else %}5{% endif %}"
+        class="w-full h-2 bg-[var(--hover-bg)] rounded-lg appearance-none cursor-pointer"
+        style="accent-color: var(--accent-primary);"
+        oninput="document.getElementById('scale-value').textContent = this.value"
+      />
+      <div class="flex justify-between text-xs text-[var(--text-muted)] mt-1">
+        <span>😢 Very Low</span>
+        <span>😐 Neutral</span>
+        <span>😊 Very High</span>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label for="notes" class="block text-sm font-medium text-[var(--text-primary)] mb-2">
+        Notes (optional)
+      </label>
+      <textarea 
+        id="notes" 
+        name="notes" 
+        rows="3"
+        class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)] focus:outline-none"
+        placeholder="What's contributing to your mood today?"
+      >{% if today_mood %}{{ today_mood.notes }}{% endif %}</textarea>
+    </div>
+
+    <div class="flex gap-4">
+      <button type="submit" class="bg-[var(--accent-primary)] hover:opacity-90 text-white px-6 py-3 rounded-lg transition font-medium">
+        Save Mood
+      </button>
+      <a href="{% url 'mood_analytics' %}" class="bg-[var(--hover-bg)] hover:opacity-80 text-[var(--text-primary)] px-6 py-3 rounded-lg transition">
+        View Analytics
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Initialize scale value display
+  document.addEventListener('DOMContentLoaded', function() {
+    const scaleInput = document.getElementById('mood_scale');
+    document.getElementById('scale-value').textContent = scaleInput.value;
+  });
+</script>
+{% endblock %}

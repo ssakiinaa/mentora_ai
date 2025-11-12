@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Profile - Mentora AI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold text-[var(--text-primary)] mb-2">Profile</h1>
+    <p class="text-[var(--text-secondary)]">Your personal growth journey overview</p>
+  </div>
+
+  <!-- User Info Card -->
+  <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 mb-6 border border-[var(--border-color)]">
+    <div class="flex items-center gap-6">
+      <img class="h-20 w-20 rounded-full" src="https://ui-avatars.com/api/?name={{ user.username }}&background=002447&color=FBECEB&size=128" alt="{{ user.username }}">
+      <div class="flex-1">
+        <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-1">{{ user.get_full_name|default:user.username }}</h2>
+        <p class="text-[var(--text-secondary)] mb-2">{{ user.email }}</p>
+        <p class="text-sm text-[var(--text-muted)]">Joined: {{ user.date_joined|date:"F d, Y" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Engagement Summary -->
+  <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 mb-6 border border-[var(--border-color)]">
+    <h2 class="text-xl font-semibold text-[var(--accent-primary)] mb-4 flex items-center gap-2">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+      </svg>
+      AI Engagement Summary
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-[var(--hover-bg)] rounded-lg p-4">
+        <p class="text-sm text-[var(--text-muted)] mb-1">Engagement Score</p>
+        <p class="text-2xl font-bold text-[var(--accent-primary)]">{{ engagement_score }}</p>
+      </div>
+      <div class="bg-[var(--hover-bg)] rounded-lg p-4">
+        <p class="text-sm text-[var(--text-muted)] mb-1">Journals (Last 30 Days)</p>
+        <p class="text-2xl font-bold text-[var(--accent-positive)]">{{ recent_journals }}</p>
+      </div>
+      <div class="bg-[var(--hover-bg)] rounded-lg p-4">
+        <p class="text-sm text-[var(--text-muted)] mb-1">Mood Entries (Last 30 Days)</p>
+        <p class="text-2xl font-bold text-[var(--accent-motivation)]">{{ recent_moods }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Journals Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-[var(--accent-primary)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Journals
+        </h3>
+        <a href="{% url 'journal_list' %}" class="text-[var(--accent-primary)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <p class="text-3xl font-bold text-[var(--text-primary)] mb-2">{{ total_journals }}</p>
+      <p class="text-sm text-[var(--text-muted)]">Total entries</p>
+    </div>
+
+    <!-- Habits Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-[var(--accent-positive)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Habits
+        </h3>
+        <a href="{% url 'habit_list' %}" class="text-[var(--accent-positive)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <p class="text-3xl font-bold text-[var(--text-primary)] mb-2">{{ total_habits }}</p>
+      <p class="text-sm text-[var(--text-muted)] flex items-center gap-1">
+        Longest streak: {{ longest_streak }} days
+        <svg class="w-4 h-4 text-[var(--accent-motivation)]" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M11.3 1.046A1 1 0 0112 2v5.4l7.9 7.9a1 1 0 01-1.414 1.414L10.586 8.7 5 14.286V18H2v-3a1 1 0 01.293-.707l8-8a1 1 0 011.007-.243z"></path>
+        </svg>
+      </p>
+    </div>
+
+    <!-- Goals Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-[var(--accent-motivation)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+          </svg>
+          Goals
+        </h3>
+        <a href="{% url 'goal_list' %}" class="text-[var(--accent-motivation)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <p class="text-3xl font-bold text-[var(--text-primary)] mb-2">{{ total_goals }}</p>
+      <p class="text-sm text-[var(--text-muted)]">Active goals</p>
+    </div>
+
+    <!-- Mood Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-[var(--accent-primary)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+          </svg>
+          Mood
+        </h3>
+        <a href="{% url 'mood_analytics' %}" class="text-[var(--accent-primary)] hover:opacity-80 text-sm">Analytics</a>
+      </div>
+      <p class="text-3xl font-bold text-[var(--text-primary)] mb-2">{{ total_moods }}</p>
+      <p class="text-sm text-[var(--text-muted)]">Average: {{ avg_mood }}/10</p>
+    </div>
+
+    <!-- Study Plans Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-[var(--accent-exciting)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Study Plans
+        </h3>
+        <a href="{% url 'study_plan_list' %}" class="text-[var(--accent-exciting)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <p class="text-3xl font-bold text-[var(--text-primary)] mb-2">{{ total_study_plans }}</p>
+      <p class="text-sm text-[var(--text-muted)]">Active plans</p>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <h3 class="text-lg font-semibold text-[var(--accent-primary)] mb-4">Quick Actions</h3>
+      <div class="space-y-2">
+        <a href="{% url 'journal_create' %}" class="block text-sm text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition">+ New Journal Entry</a>
+        <a href="{% url 'habit_create' %}" class="block text-sm text-[var(--text-secondary)] hover:text-[var(--accent-positive)] transition">+ New Habit</a>
+        <a href="{% url 'goal_create' %}" class="block text-sm text-[var(--text-secondary)] hover:text-[var(--accent-motivation)] transition">+ New Goal</a>
+        <a href="{% url 'mood_track' %}" class="block text-sm text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition">+ Log Mood</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Mood Analytics - Mentora AI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3">
+      <svg class="w-8 h-8 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+      </svg>
+      Mood Analytics
+    </h1>
+    <a href="{% url 'mood_track' %}" class="bg-[var(--accent-primary)] hover:opacity-90 text-white px-4 py-2 rounded-lg transition font-medium flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Log Mood
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- AI Insight Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <h2 class="text-lg font-semibold text-[var(--accent-primary)] mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+        </svg>
+        AI Insight
+      </h2>
+      <p class="text-[var(--text-secondary)]">{{ insight }}</p>
+    </div>
+
+    <!-- Average Mood Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+      <h2 class="text-lg font-semibold text-[var(--accent-primary)] mb-4">Average Mood</h2>
+      <div class="text-center">
+        <p class="text-4xl font-bold text-[var(--accent-primary)] mb-2">{{ avg_mood }}/10</p>
+        <p class="text-sm text-[var(--text-muted)]">Based on {{ moods|length }} entries</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mood Chart -->
+  <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 mb-6 border border-[var(--border-color)]">
+    <h2 class="text-lg font-semibold text-[var(--accent-primary)] mb-4">Mood Trend (Last 14 Days)</h2>
+    <div class="flex items-end gap-2 h-48">
+      {% for item in mood_chart_data %}
+      <div class="flex-1 flex flex-col items-center">
+        <div class="w-full bg-gradient-to-t from-[var(--accent-exciting)] to-[var(--accent-motivation)] rounded-t transition-all hover:opacity-80" 
+             style="height: {{ item.height_px }}px"
+             title="{{ item.mood.date|date:'M d' }}: {{ item.mood.mood_scale }}/10">
+        </div>
+        <span class="text-xs text-[var(--text-muted)] mt-2">{{ item.mood.mood_emoji }}</span>
+        <span class="text-xs text-[var(--text-muted)] mt-1">{{ item.mood.date|date:"M d" }}</span>
+      </div>
+      {% empty %}
+      <div class="col-span-full text-center py-12">
+        <p class="text-[var(--text-muted)] mb-4">No mood data yet</p>
+        <a href="{% url 'mood_track' %}" class="text-[var(--accent-primary)] hover:opacity-80">Start tracking your mood</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Mood Entries -->
+  <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+    <h2 class="text-lg font-semibold text-[var(--accent-primary)] mb-4">Recent Entries</h2>
+    <div class="space-y-3">
+      {% for mood in moods|slice:":10" %}
+      <div class="flex items-center justify-between p-3 bg-[var(--hover-bg)] rounded-lg">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-exciting)] to-[var(--accent-motivation)] flex items-center justify-center">
+            <span class="text-lg">{{ mood.mood_emoji }}</span>
+          </div>
+          <div>
+            <p class="text-sm text-[var(--text-primary)]">{{ mood.date|date:"F d, Y" }}</p>
+            {% if mood.notes %}
+            <p class="text-xs text-[var(--text-muted)] mt-1">{{ mood.notes|truncatewords:15 }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <span class="text-sm font-semibold text-[var(--accent-primary)]">{{ mood.mood_scale }}/10</span>
+      </div>
+      {% empty %}
+      <p class="text-[var(--text-muted)] text-center py-4">No mood entries yet</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

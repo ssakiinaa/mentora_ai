@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}Wellbeing Form | Mentora{% endblock %}
+
+{% block body_class %}bg-[#0f172a] text-white{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-extrabold text-white">Mental Health & Wellbeing</h2>
+            <p class="mt-2 text-sm text-gray-400">Track your mental wellness and daily habits</p>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-600 mb-6">
+            <nav class="-mb-px flex space-x-8">
+                <button id="form-tab" class="tab-button active py-2 px-1 border-b-2 border-green-500 font-medium text-sm text-green-400">
+                    Add New Entry
+                </button>
+                <button id="list-tab" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-400 hover:text-gray-300 hover:border-gray-300">
+                    My Wellbeing Log
+                </button>
+            </nav>
+        </div>
+        
+        <!-- Form Tab Content -->
+        <div id="form-content" class="tab-content">
+            <div class="bg-[#1e293b] shadow-xl rounded-lg px-8 py-6">
+                <form id="wellbeing-form" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="mood" class="block text-sm font-medium text-gray-300 mb-2">
+                            Current Mood
+                        </label>
+                        <select id="mood" name="mood" required class="form-input">
+                            <option value="">Select your mood</option>
+                            <option value="Excellent">😄 Excellent</option>
+                            <option value="Good">😊 Good</option>
+                            <option value="Okay">😐 Okay</option>
+                            <option value="Low">😔 Low</option>
+                            <option value="Stressed">😰 Stressed</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="sleep_hours" class="block text-sm font-medium text-gray-300 mb-2">
+                            Sleep Hours
+                        </label>
+                        <input type="number" id="sleep_hours" name="sleep_hours" min="0" max="24" required class="form-input">
+                    </div>
+                    
+                    <div>
+                        <label for="remarks" class="block text-sm font-medium text-gray-300 mb-2">
+                            Daily Reflections/Goals
+                        </label>
+                        <textarea id="remarks" name="remarks" class="form-input" rows="4" placeholder="How are you feeling today? Any goals or reflections?"></textarea>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                            Save Wellbeing Entry
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- List Tab Content -->
+        <div id="list-content" class="tab-content hidden">
+            <div class="bg-[#1e293b] shadow-xl rounded-lg px-8 py-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-medium text-white">Your Wellbeing Log</h3>
+                    <button id="add-another" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-150 ease-in-out">
+                        Add Another Entry
+                    </button>
+                </div>
+                
+                <div id="entries-list" class="space-y-4">
+                    <!-- Dynamic entries will be added here -->
+                </div>
+                
+                <div id="empty-state" class="text-center py-8 text-gray-400">
+                    <p>No wellbeing entries added yet. Click "Add New Entry" tab to get started!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Form field styling */
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #374151;
+        border-radius: 0.375rem;
+        background-color: #374151;
+        color: white;
+        font-size: 0.875rem;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    
+    /* Tab styling */
+    .tab-button.active {
+        color: #34d399;
+        border-color: #10b981;
+    }
+    
+    /* Entry item styling */
+    .entry-item {
+        background-color: #374151;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        border-left: 4px solid #10b981;
+    }
+    
+    .entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .delete-btn {
+        background-color: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+    }
+    
+    .delete-btn:hover {
+        background-color: #dc2626;
+    }
+    
+    .mood-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+</style>
+
+<script>
+    let entries = [];
+    
+    // Tab switching functionality
+    document.getElementById('form-tab').addEventListener('click', function() {
+        showTab('form');
+    });
+    
+    document.getElementById('list-tab').addEventListener('click', function() {
+        showTab('list');
+    });
+    
+    function showTab(tab) {
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.add('text-gray-400');
+            btn.classList.remove('text-green-400', 'border-green-500');
+            btn.classList.add('border-transparent');
+        });
+        
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        if (tab === 'form') {
+            document.getElementById('form-tab').classList.add('active', 'text-green-400', 'border-green-500');
+            document.getElementById('form-tab').classList.remove('text-gray-400', 'border-transparent');
+            document.getElementById('form-content').classList.remove('hidden');
+        } else {
+            document.getElementById('list-tab').classList.add('active', 'text-green-400', 'border-green-500');
+            document.getElementById('list-tab').classList.remove('text-gray-400', 'border-transparent');
+            document.getElementById('list-content').classList.remove('hidden');
+        }
+    }
+    
+    // Form submission
+    document.getElementById('wellbeing-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const mood = document.getElementById('mood').value;
+        const sleepHours = document.getElementById('sleep_hours').value;
+        const remarks = document.getElementById('remarks').value;
+        
+        if (mood && sleepHours) {
+            const entry = {
+                id: Date.now(),
+                mood: mood,
+                sleepHours: sleepHours,
+                remarks: remarks,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            entries.push(entry);
+            renderEntries();
+            
+            // Clear form
+            document.getElementById('wellbeing-form').reset();
+            
+            // Switch to list tab
+            showTab('list');
+        }
+    });
+    
+    // Add another entry button
+    document.getElementById('add-another').addEventListener('click', function() {
+        showTab('form');
+    });
+    
+    // Render entries
+    function renderEntries() {
+        const entriesList = document.getElementById('entries-list');
+        const emptyState = document.getElementById('empty-state');
+        
+        if (entries.length === 0) {
+            emptyState.style.display = 'block';
+            entriesList.innerHTML = '';
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        entriesList.innerHTML = entries.map(entry => `
+            <div class="entry-item">
+                <div class="entry-header">
+                    <div>
+                        <span class="mood-badge bg-green-600 text-white">${entry.mood}</span>
+                        <span class="text-gray-400 text-sm ml-2">💤 ${entry.sleepHours}h sleep</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteEntry(${entry.id})">Delete</button>
+                </div>
+                ${entry.remarks ? `<p class="text-gray-300 text-sm mb-2">${entry.remarks}</p>` : ''}
+                <p class="text-gray-500 text-xs">Logged: ${entry.timestamp}</p>
+            </div>
+        `).join('');
+    }
+    
+    // Delete entry
+    function deleteEntry(entryId) {
+        entries = entries.filter(entry => entry.id !== entryId);
+        renderEntries();
+    }
+</script>
+{% endblock %}

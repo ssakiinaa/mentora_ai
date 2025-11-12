@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Home | Mentora AI{% endblock %}
+
+{% block content %}
+<div class="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden">
+  <!-- Background Effect Layer -->
+  <div class="absolute inset-0 z-0 el pointer-events-none"></div>
+
+  <!-- Main Content -->
+  <div class="relative z-10 text-center px-4">
+    <h1 class="text-6xl md:text-8xl font-extrabold neon-glow mb-6">
+      MENTORA AI
+    </h1>
+    <p class="text-xl md:text-2xl text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
+      Your AI-powered personal growth and study assistant. Reflect, plan, and grow intelligently.
+    </p>
+    
+    {% if not user.is_authenticated %}
+    <div class="flex gap-4 justify-center">
+      <a href="{% url 'login' %}" class="bg-[var(--accent-primary)] hover:opacity-90 text-white px-8 py-3 rounded-lg text-lg font-semibold transition">
+        Get Started
+      </a>
+      <a href="{% url 'dashboard' %}" class="bg-[var(--bg-card)] hover:opacity-90 text-[var(--text-primary)] px-8 py-3 rounded-lg text-lg font-semibold transition border border-[var(--border-color)]">
+        Learn More
+      </a>
+    </div>
+    {% else %}
+    <div class="flex gap-4 justify-center">
+      <a href="{% url 'dashboard' %}" class="bg-[var(--accent-primary)] hover:opacity-90 text-white px-8 py-3 rounded-lg text-lg font-semibold transition">
+        Go to Dashboard
+      </a>
+    </div>
+    {% endif %}
+  </div>
+  
+  <!-- Features Grid -->
+  <div class="relative z-10 mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto px-4">
+    <div class="bg-[var(--bg-card)] rounded-xl p-6 border border-[var(--border-color)] shadow-lg">
+      <svg class="w-12 h-12 text-[var(--accent-primary)] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="text-lg font-semibold text-[var(--accent-primary)] mb-2">AI Journaling</h3>
+      <p class="text-sm text-[var(--text-secondary)]">Reflect on your day with AI-powered insights</p>
+    </div>
+    <div class="bg-[var(--bg-card)] rounded-xl p-6 border border-[var(--border-color)] shadow-lg">
+      <svg class="w-12 h-12 text-[var(--accent-positive)] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="text-lg font-semibold text-[var(--accent-positive)] mb-2">Habit Tracking</h3>
+      <p class="text-sm text-[var(--text-secondary)]">Build consistency with streak tracking</p>
+    </div>
+    <div class="bg-[var(--bg-card)] rounded-xl p-6 border border-[var(--border-color)] shadow-lg">
+      <svg class="w-12 h-12 text-[var(--accent-exciting)] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+      </svg>
+      <h3 class="text-lg font-semibold text-[var(--accent-exciting)] mb-2">Study Planning</h3>
+      <p class="text-sm text-[var(--text-secondary)]">AI-generated personalized study schedules</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  @font-face {
+    font-family: "Geist";
+    src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
+  }
+
+  .neon-glow {
+    font-family: "Geist", sans-serif;
+    color: var(--accent-primary);
+    text-shadow:
+      0 0 5px rgba(251, 236, 235, 0.5),
+      0 0 10px var(--accent-exciting),
+      0 0 15px var(--accent-exciting),
+      0 0 25px var(--accent-primary),
+      0 0 35px var(--accent-primary);
+    filter: drop-shadow(0 0 4px rgba(251, 236, 235, 0.3));
+  }
+
+  .el {
+    background: conic-gradient(
+      from 180deg at 50% 70%,
+      hsla(0, 0%, 98%, 1) 0deg,
+      #eec32d 72deg,
+      #ec4b4b 144deg,
+      #709ab9 216deg,
+      #4dffbf 288deg,
+      hsla(0, 0%, 98%, 1) 360deg
+    );
+    width: 100%;
+    height: 100%;
+    mask:
+      radial-gradient(circle at 50% 50%, white 2px, transparent 2.5px) 50% 50% / var(--size) var(--size),
+      url("https://assets.codepen.io/605876/noise-mask.png") 256px 50% / 256px 256px;
+    mask-composite: intersect;
+    animation: flicker 20s infinite linear;
+    --size: 20px;
+  }
+
+  @keyframes flicker {
+    to {
+      mask-position: 50% 50%, 0 50%;
+    }
+  }
+</style>
+{% endblock %}

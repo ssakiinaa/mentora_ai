@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Mentora AI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+  <!-- Greeting Section -->
+  <div class="mb-8">
+    {% now "H" as current_hour %}
+    {% if current_hour|add:"0" < 12 %}
+      <h1 class="text-4xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">
+        <svg class="w-10 h-10 text-[var(--accent-motivation)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        Good Morning, {{ user.first_name|default:user.username }}
+      </h1>
+    {% elif current_hour|add:"0" < 17 %}
+      <h1 class="text-4xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">
+        <svg class="w-10 h-10 text-[var(--accent-exciting)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        Good Afternoon, {{ user.first_name|default:user.username }}
+      </h1>
+    {% else %}
+      <h1 class="text-4xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">
+        <svg class="w-10 h-10 text-[var(--accent-exciting)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+        Good Evening, {{ user.first_name|default:user.username }}
+      </h1>
+    {% endif %}
+    <p class="text-[var(--text-secondary)]">Welcome back to your personal growth journey</p>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    <!-- Journal Reflections Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-[var(--accent-primary)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Journal Reflections
+        </h2>
+        <a href="{% url 'journal_list' %}" class="text-[var(--accent-primary)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <p class="text-sm text-[var(--text-secondary)] mt-2 mb-4 line-clamp-3">{{ latest_reflection }}</p>
+      <div class="flex items-center justify-between text-xs text-[var(--text-muted)]">
+        <span>{{ total_journals }} entries</span>
+        <a href="{% url 'journal_create' %}" class="text-[var(--accent-primary)] hover:opacity-80">+ New Entry</a>
+      </div>
+    </div>
+
+    <!-- Habits Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-[var(--accent-positive)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Habits
+        </h2>
+        <a href="{% url 'habit_list' %}" class="text-[var(--accent-positive)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <div class="space-y-3">
+        {% for habit in active_habits|slice:":3" %}
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <p class="text-sm text-[var(--text-primary)]">{{ habit.name }}</p>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="bg-[var(--accent-positive)] h-2 rounded-full" style="width: {{ habit.progress }}%"></div>
+              </div>
+              <span class="text-xs text-[var(--text-muted)] flex items-center gap-1">
+                {{ habit.streak }}
+                <svg class="w-3 h-3 text-[var(--accent-motivation)]" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M11.3 1.046A1 1 0 0112 2v5.4l7.9 7.9a1 1 0 01-1.414 1.414L10.586 8.7 5 14.286V18H2v-3a1 1 0 01.293-.707l8-8a1 1 0 011.007-.243z"></path>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-sm text-[var(--text-muted)]">No active habits yet</p>
+        {% endfor %}
+      </div>
+      <a href="{% url 'habit_create' %}" class="mt-4 inline-block text-sm text-[var(--accent-positive)] hover:opacity-80">+ Add Habit</a>
+    </div>
+
+    <!-- Goals Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-[var(--accent-motivation)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+          </svg>
+          Goals
+        </h2>
+        <a href="{% url 'goal_list' %}" class="text-[var(--accent-motivation)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <div class="space-y-3">
+        {% for goal in active_goals|slice:":3" %}
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <p class="text-sm font-medium text-[var(--text-primary)]">{{ goal.title }}</p>
+            <span class="text-xs text-[var(--text-muted)]">{{ goal.progress|floatformat:0 }}%</span>
+          </div>
+          <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="bg-[var(--accent-positive)] h-2 rounded-full" style="width: {{ goal.progress }}%"></div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-sm text-[var(--text-muted)]">No active goals yet</p>
+        {% endfor %}
+      </div>
+      <a href="{% url 'goal_create' %}" class="mt-4 inline-block text-sm text-[var(--accent-motivation)] hover:opacity-80">+ New Goal</a>
+    </div>
+
+    <!-- Study Plan Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-[var(--accent-exciting)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Study Plan
+        </h2>
+        <a href="{% url 'study_plan_list' %}" class="text-[var(--accent-exciting)] hover:opacity-80 text-sm">View All</a>
+      </div>
+      <div class="space-y-3">
+        {% for plan in active_study_plans|slice:":2" %}
+        <div>
+          <p class="text-sm font-medium text-[var(--text-primary)]">{{ plan.subject }}</p>
+          <div class="flex items-center gap-2 mt-1">
+            <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-[var(--accent-exciting)] h-2 rounded-full" style="width: {{ plan.progress }}%"></div>
+            </div>
+            <span class="text-xs text-[var(--text-muted)]">{{ plan.progress|floatformat:0 }}%</span>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-sm text-[var(--text-muted)]">No active study plans</p>
+        {% endfor %}
+      </div>
+      <a href="{% url 'study_plan_create' %}" class="mt-4 inline-block text-sm text-[var(--accent-exciting)] hover:opacity-80">+ Create Plan</a>
+    </div>
+
+    <!-- Mood Summary Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-[var(--accent-primary)] flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+          </svg>
+          Mood Summary
+        </h2>
+        <a href="{% url 'mood_analytics' %}" class="text-[var(--accent-primary)] hover:opacity-80 text-sm">Analytics</a>
+      </div>
+      <div class="mb-4">
+        <div class="flex items-center gap-4 mb-3">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--accent-exciting)] to-[var(--accent-motivation)] flex items-center justify-center">
+            {% if recent_moods %}
+              <span class="text-2xl">{{ recent_moods.0.mood_emoji }}</span>
+            {% else %}
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            {% endif %}
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-[var(--text-primary)]">{{ avg_mood }}/10</p>
+            <p class="text-xs text-[var(--text-muted)]">Average Mood</p>
+          </div>
+        </div>
+        <p class="text-sm text-[var(--text-secondary)]">{{ mood_insight }}</p>
+      </div>
+      <a href="{% url 'mood_track' %}" class="inline-block text-sm text-[var(--accent-primary)] hover:opacity-80">+ Log Mood</a>
+    </div>
+
+    <!-- Quick Stats Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
+      <h2 class="text-lg font-semibold text-[var(--accent-primary)] flex items-center gap-2 mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        Quick Stats
+      </h2>
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-[var(--text-secondary)]">Total Journals</span>
+          <span class="text-lg font-bold text-[var(--accent-primary)]">{{ total_journals }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-[var(--text-secondary)]">Active Habits</span>
+          <span class="text-lg font-bold text-[var(--accent-positive)]">{{ total_habits }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-[var(--text-secondary)]">Active Goals</span>
+          <span class="text-lg font-bold text-[var(--accent-motivation)]">{{ total_goals }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent Activity Section -->
+  <div class="mt-8">
+    <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-4">Recent Activity</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Recent Journals -->
+      <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+        <h3 class="text-lg font-semibold text-[var(--accent-primary)] mb-4">Latest Journal Entries</h3>
+        <div class="space-y-3">
+          {% for journal in recent_journals %}
+          <div class="border-l-2 border-[var(--accent-primary)] pl-4">
+            <p class="text-xs text-[var(--text-muted)]">{{ journal.created_at|date:"M d, Y" }}</p>
+            <p class="text-sm text-[var(--text-secondary)] mt-1 line-clamp-2">{{ journal.entry_text|truncatewords:15 }}</p>
+          </div>
+          {% empty %}
+          <p class="text-sm text-[var(--text-muted)]">No journal entries yet</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Recent Moods -->
+      <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
+        <h3 class="text-lg font-semibold text-[var(--accent-primary)] mb-4">Mood Trend (Last 7 Days)</h3>
+        <div class="flex items-end gap-2 h-32">
+          {% for item in mood_chart_data %}
+          <div class="flex-1 flex flex-col items-center">
+            <div class="w-full bg-gradient-to-t from-[var(--accent-exciting)] to-[var(--accent-motivation)] rounded-t" style="height: {{ item.height_percent }}%"></div>
+            <span class="text-xs text-[var(--text-muted)] mt-2">{{ item.mood.mood_emoji }}</span>
+          </div>
+          {% empty %}
+          <p class="text-sm text-[var(--text-muted)]">Start tracking your mood to see trends</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
