@@ -53,6 +53,41 @@
         </div>
       </div>
       {% endif %}
+
+      {% if plan.start_date or plan.target_date or plan.target_minutes %}
+      <div class="border-t border-[var(--border-color)] pt-4 mt-4 space-y-1 text-xs text-[var(--text-muted)]">
+        {% if plan.start_date or plan.target_date %}
+        <p>
+          Timeframe:
+          {% if plan.start_date %}{{ plan.start_date|date:"M d, Y" }}{% else %}Start now{% endif %}
+          –
+          {% if plan.target_date %}{{ plan.target_date|date:"M d, Y" }}{% else %}Open ended{% endif %}
+        </p>
+        {% endif %}
+        {% if plan.target_minutes %}
+        <p>Target workload: {{ plan.target_minutes }} minutes</p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'study_plan_checkin' plan.id %}" class="mt-4">
+        {% csrf_token %}
+        <button type="submit" class="inline-flex items-center rounded-full bg-[var(--accent-exciting)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition">
+          Study Today
+        </button>
+      </form>
+
+      <div class="mt-4 flex flex-wrap gap-3 items-center">
+        <a href="{% url 'study_plan_edit' plan.id %}" class="inline-flex items-center rounded-full bg-[var(--accent-exciting)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition">
+          Edit
+        </a>
+        <form method="post" action="{% url 'study_plan_delete' plan.id %}" class="inline-block">
+          {% csrf_token %}
+          <button type="submit" class="inline-flex items-center rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition">
+            Delete
+          </button>
+        </form>
+      </div>
     </div>
     {% empty %}
     <div class="col-span-full text-center py-12">

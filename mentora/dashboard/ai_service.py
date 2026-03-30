@@ -196,6 +196,38 @@ class AICore:
         else:
             return f"🌟 Every step counts! Keep working on {habit_name}, consistency is key!"
 
+    def generate_coaching_response(self, user_question: str, user_context: str) -> str:
+        """Generate a coaching reply using the user's recent data and goals."""
+        prompt = (
+            "You are a supportive AI mentor. Use the user's recent goals, habits, journal reflections, and mood history "
+            "to answer the question with empathy, actionable guidance, and constructive next steps. "
+            "Keep the response clear and practical."
+        )
+        if self.client:
+            try:
+                response = self.client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": prompt},
+                        {"role": "user", "content": f"User context:\n{user_context}\n\nUser question: {user_question}"}
+                    ],
+                    max_tokens=250,
+                    temperature=0.7
+                )
+                return response.choices[0].message.content.strip()
+            except Exception as e:
+                print(f"OpenAI API error: {e}")
+                return self._stub_generate_coaching_response(user_question, user_context)
+        return self._stub_generate_coaching_response(user_question, user_context)
+
+    def _stub_generate_coaching_response(self, user_question: str, user_context: str) -> str:
+        """Stub response when OpenAI is unavailable."""
+        return (
+            "Thanks for sharing. Based on your recent goals and habits, try focusing on one clear action today, "
+            "breaking it into manageable steps. Keep checking your progress and celebrate small wins. "
+            "If you want, ask me for a specific plan or a habit adjustment."
+        )
+
 
 # Singleton instance
 ai_core = AICore()

@@ -29,6 +29,8 @@ class Habit(models.Model):
     progress = models.FloatField(default=0.0)  # 0.0 to 100.0
     streak = models.IntegerField(default=0)
     last_completed = models.DateField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    target_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -56,6 +58,26 @@ class Habit(models.Model):
                 self.streak = 1
         else:
             self.streak = 0
+
+    def get_expected_days(self, until=None):
+        until = until or timezone.now().date()
+        start = self.start_date or (self.created_at.date() if self.created_at else until)
+        end = min(until, self.target_date) if self.target_date else until
+        delta = (end - start).days + 1
+        return max(1, delta)
+
+    def recalc_progress(self):
+        """Recalculate habit progress from daily completions and timeframe."""
+        if self.start_date or self.target_date:
+            expected = self.get_expected_days()
+            completed = self.completions.filter(completed_at__lte=timezone.now().date()).count()
+            self.progress = min(100.0, (completed / expected) * 100)
+        else:
+            recent_completions = self.completions.filter(
+                completed_at__gte=timezone.now().date() - timedelta(days=6)
+            ).count()
+            self.progress = min(100.0, (recent_completions / 7) * 100)
+        self.save()
 
 
 class HabitCompletion(models.Model):
@@ -86,6 +108,7 @@ class Goal(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     progress = models.FloatField(default=0.0)  # 0.0 to 100.0
+    start_date = models.DateField(null=True, blank=True)
     target_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -98,6 +121,37 @@ class Goal(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.title}"
+
+    def total_timeframe_days(self):
+        if self.target_date:
+            start = self.start_date or self.created_at.date()
+            if self.target_date >= start:
+                return max(1, (self.target_date - start).days + 1)
+        return 0
+
+    def recalc_progress(self):
+        if self.total_timeframe_days() > 0:
+            completed = self.completions.count()
+            self.progress = min(100.0, (completed / self.total_timeframe_days()) * 100)
+        if self.target_date and timezone.now().date() >= self.target_date and self.progress >= 100:
+            self.is_completed = True
+        self.save()
+
+
+class GoalCompletion(models.Model):
+    """Track daily goal check-ins"""
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='completions')
+    completed_at = models.DateField(default=timezone.now)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ['goal', 'completed_at']
+        ordering = ['-completed_at']
+        verbose_name = 'Goal Completion'
+        verbose_name_plural = 'Goal Completions'
+
+    def __str__(self):
+        return f"{self.goal.title} - {self.completed_at}"
 
 
 class Mood(models.Model):
@@ -137,6 +191,9 @@ class StudyPlan(models.Model):
     description = models.TextField()
     schedule = models.JSONField(default=dict)  # Store daily schedule as JSON
     progress = models.FloatField(default=0.0)  # 0.0 to 100.0
+    start_date = models.DateField(null=True, blank=True)
+    target_date = models.DateField(null=True, blank=True)
+    target_minutes = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -148,6 +205,22 @@ class StudyPlan(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.subject}"
+
+    @property
+    def target_hours(self):
+        return self.target_minutes / 60 if self.target_minutes else 0
+
+    def recalc_progress(self):
+        total_minutes = sum(session.duration_minutes for session in self.sessions.all())
+        if self.target_minutes > 0:
+            self.progress = min(100.0, (total_minutes / self.target_minutes) * 100)
+        elif self.start_date and self.target_date and self.start_date <= self.target_date:
+            planned_days = (self.target_date - self.start_date).days + 1
+            completed_days = len({session.completed_at.date() for session in self.sessions.all() if session.completed_at.date() <= timezone.now().date()})
+            self.progress = min(100.0, (completed_days / planned_days) * 100)
+        else:
+            self.progress = min(100.0, (total_minutes / (20 * 60)) * 100)
+        self.save()
 
 
 class StudySession(models.Model):

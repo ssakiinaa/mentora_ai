@@ -3,7 +3,7 @@ DRF Serializers for Mentora AI API
 """
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Journal, Habit, HabitCompletion, Goal, Mood, StudyPlan, StudySession
+from .models import Journal, Habit, HabitCompletion, Goal, GoalCompletion, Mood, StudyPlan, StudySession
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,19 +40,28 @@ class HabitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Habit
         fields = ['id', 'user', 'name', 'description', 'progress', 'streak', 
-                  'last_completed', 'created_at', 'updated_at', 'is_active', 'completions']
+                  'last_completed', 'start_date', 'target_date', 'created_at', 'updated_at', 'is_active', 'completions']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+
+class GoalCompletionSerializer(serializers.ModelSerializer):
+    """Serializer for goal completions"""
+    class Meta:
+        model = GoalCompletion
+        fields = ['id', 'goal', 'completed_at', 'notes']
+        read_only_fields = ['id']
 
 
 class GoalSerializer(serializers.ModelSerializer):
     """Serializer for goals"""
     user = serializers.StringRelatedField(read_only=True)
     goal_type_display = serializers.CharField(source='get_goal_type_display', read_only=True)
+    completions = GoalCompletionSerializer(many=True, read_only=True)
     
     class Meta:
         model = Goal
         fields = ['id', 'user', 'goal_type', 'goal_type_display', 'title', 'description', 
-                  'progress', 'target_date', 'created_at', 'updated_at', 'is_completed']
+                  'progress', 'start_date', 'target_date', 'created_at', 'updated_at', 'is_completed', 'completions']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
 
@@ -85,7 +94,7 @@ class StudyPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudyPlan
         fields = ['id', 'user', 'subject', 'description', 'schedule', 'progress', 
-                  'created_at', 'updated_at', 'is_active', 'sessions']
+                  'start_date', 'target_date', 'target_minutes', 'created_at', 'updated_at', 'is_active', 'sessions']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
 

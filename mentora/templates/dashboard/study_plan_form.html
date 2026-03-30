@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}New Study Plan - Mentora AI{% endblock %}
+{% block title %}{% if edit_mode %}Edit Study Plan{% else %}New Study Plan{% endif %} - Mentora AI{% endblock %}
 
 {% block content %}
 <div class="min-h-screen max-w-2xl mx-auto">
@@ -7,7 +7,7 @@
     <svg class="w-8 h-8 text-[var(--accent-exciting)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
     </svg>
-    New Study Plan
+    {% if edit_mode %}Edit Study Plan{% else %}New Study Plan{% endif %}
   </h1>
 
   <form method="post" class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
@@ -21,6 +21,7 @@
         id="subject" 
         name="subject" 
         required
+        value="{{ plan.subject|default_if_none:'' }}"
         class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-exciting)] focus:ring-2 focus:ring-[var(--accent-exciting)] focus:outline-none"
         placeholder="e.g., Python Programming, Data Structures, Web Development"
       />
@@ -37,7 +38,7 @@
         required
         class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-exciting)] focus:ring-2 focus:ring-[var(--accent-exciting)] focus:outline-none"
         placeholder="Describe what you want to learn, your goals, and any specific topics you want to focus on. AI will generate a personalized study plan based on this."
-      ></textarea>
+      >{{ plan.description|default_if_none:'' }}</textarea>
       <p class="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
@@ -46,9 +47,66 @@
       </p>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div>
+        <label for="start_date" class="block text-sm font-medium text-[var(--text-primary)] mb-2">Start Date</label>
+        <input
+          type="date"
+          id="start_date"
+          name="start_date"
+          value="{{ plan.start_date|date:'Y-m-d' }}"
+          class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-exciting)] focus:ring-2 focus:ring-[var(--accent-exciting)] focus:outline-none"
+        />
+      </div>
+      <div>
+        <label for="target_date" class="block text-sm font-medium text-[var(--text-primary)] mb-2">Target Date</label>
+        <input
+          type="date"
+          id="target_date"
+          name="target_date"
+          value="{{ plan.target_date|date:'Y-m-d' }}"
+          class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-exciting)] focus:ring-2 focus:ring-[var(--accent-exciting)] focus:outline-none"
+        />
+      </div>
+      <div>
+        <label for="target_hours" class="block text-sm font-medium text-[var(--text-primary)] mb-2">Target Hours</label>
+        <input
+          type="number"
+          id="target_hours"
+          name="target_hours"
+          min="0"
+          step="0.5"
+          value="{{ plan.target_hours|default_if_none:0 }}"
+          class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-exciting)] focus:ring-2 focus:ring-[var(--accent-exciting)] focus:outline-none"
+          placeholder="Optional: e.g., 10"
+        />
+        <p class="text-xs text-[var(--text-muted)] mt-2">This lets daily check-ins update plan progress.</p>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label for="progress" class="block text-sm font-medium text-[var(--text-primary)] mb-2">
+        Progress (%)
+      </label>
+      <input
+        type="number"
+        id="progress"
+        name="progress"
+        min="0"
+        max="100"
+        value="{{ plan.progress|default_if_none:0|floatformat:0 }}"
+        class="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg p-3 border border-[var(--border-color)] focus:border-[var(--accent-exciting)] focus:ring-2 focus:ring-[var(--accent-exciting)] focus:outline-none"
+      />
+    </div>
+
+    <div class="mb-6 flex items-center gap-3">
+      <input type="checkbox" id="is_active" name="is_active" class="h-4 w-4 text-[var(--accent-exciting)] border-[var(--border-color)] rounded" {% if plan.is_active or plan.is_active is not None and edit_mode %}checked{% endif %}>
+      <label for="is_active" class="text-sm text-[var(--text-secondary)]">Keep this plan active</label>
+    </div>
+
     <div class="flex gap-4">
       <button type="submit" class="bg-[var(--accent-exciting)] hover:opacity-90 text-white px-6 py-3 rounded-lg transition font-medium">
-        Generate Study Plan
+        {% if edit_mode %}Save Changes{% else %}Generate Study Plan{% endif %}
       </button>
       <a href="{% url 'study_plan_list' %}" class="bg-[var(--hover-bg)] hover:opacity-80 text-[var(--text-primary)] px-6 py-3 rounded-lg transition">
         Cancel

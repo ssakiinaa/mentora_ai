@@ -119,6 +119,21 @@
       <a href="{% url 'goal_create' %}" class="mt-4 inline-block text-sm text-[var(--accent-motivation)] hover:opacity-80">+ New Goal</a>
     </div>
 
+    <!-- AI Coach Chat Card -->
+    <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-semibold text-[var(--accent-primary)]">AI Coach</h2>
+          <p class="text-sm text-[var(--text-secondary)]">Ask about your goals, habits, and progress.</p>
+        </div>
+        <a href="{% url 'ai_chat' %}" class="text-[var(--accent-primary)] hover:opacity-80 text-sm">Open Chat</a>
+      </div>
+      <div class="space-y-3 text-sm text-[var(--text-secondary)]">
+        <p>Discuss your goals in detail, get historical insights, and receive constructive action steps.</p>
+        <p class="text-[var(--text-muted)]">Powered by your recent activity and AI coaching.</p>
+      </div>
+    </div>
+
     <!-- Study Plan Card -->
     <div class="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 hover:bg-[var(--hover-bg)] transition border border-[var(--border-color)]">
       <div class="flex items-center justify-between mb-4">

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Coach - Mentora AI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+  <div class="mb-8">
+    <div class="flex flex-col lg:flex-row gap-6 items-start">
+      <div class="flex-1 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] shadow-lg p-6">
+        <div class="mb-6">
+          <h1 class="text-3xl font-bold text-[var(--text-primary)] mb-2">AI Coaching</h1>
+          <p class="text-[var(--text-secondary)]">Talk to your AI coach about your goals, habits, and progress. The model uses your recent entries to suggest constructive next steps and keep you on track.</p>
+        </div>
+
+        <div class="space-y-6">
+          <div class="rounded-3xl bg-[var(--bg-secondary)] p-5 border border-[var(--border-color)]">
+            <h2 class="text-lg font-semibold text-[var(--accent-primary)] mb-3">Recent context</h2>
+            <div class="space-y-4 text-sm text-[var(--text-secondary)]">
+              <div>
+                <h3 class="font-semibold text-[var(--text-primary)]">Goals</h3>
+                {% if active_goals %}
+                  <div class="mt-2 space-y-2">
+                    {% for goal in active_goals %}
+                      <div class="rounded-2xl bg-[var(--bg-card)] p-3 border border-[var(--border-color)]">
+                        <p class="font-medium">{{ goal.title }}</p>
+                        <p class="text-xs text-[var(--text-muted)]">Progress: {{ goal.progress|floatformat:0 }}%{% if goal.target_date %}, target {{ goal.target_date|date:"M d" }}{% endif %}</p>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-[var(--text-muted)]">No active goals found yet.</p>
+                {% endif %}
+              </div>
+
+              <div>
+                <h3 class="font-semibold text-[var(--text-primary)]">Habits</h3>
+                {% if active_habits %}
+                  <div class="mt-2 space-y-2">
+                    {% for habit in active_habits %}
+                      <div class="rounded-2xl bg-[var(--bg-card)] p-3 border border-[var(--border-color)]">
+                        <p class="font-medium">{{ habit.name }}</p>
+                        <p class="text-xs text-[var(--text-muted)]">Streak: {{ habit.streak }} days · Progress: {{ habit.progress|floatformat:0 }}%</p>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-[var(--text-muted)]">No habits recorded recently.</p>
+                {% endif %}
+              </div>
+
+              <div>
+                <h3 class="font-semibold text-[var(--text-primary)]">Journal highlights</h3>
+                {% if recent_journals %}
+                  <div class="mt-2 space-y-2">
+                    {% for journal in recent_journals %}
+                      <div class="rounded-2xl bg-[var(--bg-card)] p-3 border border-[var(--border-color)]">
+                        <p class="text-xs text-[var(--text-muted)]">{{ journal.created_at|date:"M d" }}</p>
+                        <p class="mt-1">{{ journal.entry_text|truncatewords:20 }}</p>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-[var(--text-muted)]">No recent journal entries to summarize.</p>
+                {% endif %}
+              </div>
+
+              <div>
+                <h3 class="font-semibold text-[var(--text-primary)]">Mood check</h3>
+                {% if recent_moods %}
+                  <div class="mt-2 grid grid-cols-2 gap-3 text-sm">
+                    {% for mood in recent_moods %}
+                      <div class="rounded-2xl bg-[var(--bg-card)] p-3 border border-[var(--border-color)]">
+                        <p class="font-medium">{{ mood.date|date:"M d" }}</p>
+                        <p class="text-[var(--text-muted)]">{{ mood.mood_emoji }} {{ mood.mood_scale }}/10</p>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-[var(--text-muted)]">Mood data is not available yet.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-3xl bg-[var(--bg-secondary)] p-5 border border-[var(--border-color)] text-sm text-[var(--text-secondary)]">
+            <h2 class="text-lg font-semibold text-[var(--accent-positive)] mb-3">How it works</h2>
+            <p class="mb-2">Ask the AI coach about your detailed goals, progress, or any challenge you are facing.</p>
+            <p>The AI will use your recent activity to offer practical advice, motivation, and next action suggestions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:w-2/3 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] shadow-lg p-6 flex flex-col">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-[var(--text-primary)]">Chat with your AI mentor</h2>
+          <p class="text-[var(--text-secondary)]">Type a question below and get constructive suggestions that reflect your recent habits, goals, journals, and mood.</p>
+        </div>
+
+        <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 mb-6 max-h-[60vh] pr-2">
+          <div class="rounded-3xl bg-[var(--bg-secondary)] p-5 border border-[var(--border-color)] shadow-sm">
+            <p class="font-semibold text-[var(--accent-primary)]">Mentora AI</p>
+            <p class="mt-3 text-[var(--text-secondary)]">Hi! I’m here to help you discuss your goals in detail and suggest constructive actions. What would you like to talk about today?</p>
+          </div>
+        </div>
+
+        <form id="chat-form" class="space-y-4">
+          {% csrf_token %}
+          <div>
+            <label for="chat-input" class="block text-sm font-medium text-[var(--text-primary)]">Your message</label>
+            <textarea id="chat-input" name="message" rows="3" class="mt-2 w-full rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" placeholder="Ask about your goals, habits, study plan or progress..."></textarea>
+          </div>
+          <div class="flex items-center justify-between gap-4">
+            <button type="submit" class="inline-flex items-center justify-center rounded-full bg-[var(--accent-primary)] px-6 py-3 text-white font-semibold hover:opacity-90 transition">Send</button>
+            <p id="chat-status" class="text-sm text-[var(--text-muted)]">Your chats are private and goal-focused.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+  const chatMessages = document.getElementById('chat-messages');
+  const chatStatus = document.getElementById('chat-status');
+
+  function appendMessage(role, text) {
+    const wrapper = document.createElement('div');
+    wrapper.className = role === 'user'
+      ? 'rounded-3xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-5 shadow-sm self-end text-[var(--text-primary)]'
+      : 'rounded-3xl bg-[var(--bg-secondary)] border border-[var(--border-color)] p-5 shadow-sm';
+
+    const header = document.createElement('p');
+    header.className = 'font-semibold text-[var(--accent-primary)]';
+    header.textContent = role === 'user' ? 'You' : 'Mentora AI';
+
+    const message = document.createElement('p');
+    message.className = 'mt-3 text-[var(--text-secondary)] whitespace-pre-wrap';
+    message.textContent = text;
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(message);
+    chatMessages.appendChild(wrapper);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  chatForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    appendMessage('user', message);
+    chatInput.value = '';
+    chatStatus.textContent = 'Thinking...';
+
+    const formData = new FormData(chatForm);
+
+    try {
+      const response = await fetch('{% url "ai_chat_reply" %}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        appendMessage('assistant', data.error || 'Sorry, I could not process that right now.');
+      } else {
+        appendMessage('assistant', data.reply || 'I could not generate a response.');
+      }
+    } catch (error) {
+      appendMessage('assistant', 'A network error occurred. Please try again.');
+      console.error(error);
+    } finally {
+      chatStatus.textContent = 'Your chats are private and goal-focused.';
+    }
+  });
+</script>
+{% endblock %}
