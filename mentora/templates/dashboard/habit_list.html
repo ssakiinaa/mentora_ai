@@ -46,28 +46,29 @@
         </div>
       </div>
 
-      {% if habit.start_date or habit.target_date %}
       <div class="mb-4 text-xs text-[var(--text-muted)]">
         Timeframe:
         {% if habit.start_date %}{{ habit.start_date|date:"M d" }}{% else %}Start now{% endif %}
         –
         {% if habit.target_date %}{{ habit.target_date|date:"M d" }}{% else %}Open ended{% endif %}
       </div>
-      {% endif %}
-
-      <form method="post" action="{% url 'habit_update' habit.id %}" class="mb-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-        {% csrf_token %}
-        <input
-          type="number"
-          name="progress"
-          min="0"
-          max="100"
-          value="{{ habit.progress|floatformat:0 }}"
-          class="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-          aria-label="Update progress for {{ habit.name }}"
-        />
-        <button type="submit" class="rounded-full bg-[var(--accent-primary)] px-4 py-3 text-white font-medium hover:opacity-90 transition">Update</button>
-      </form>
+      <div class="mb-4 grid gap-2 sm:grid-cols-3">
+        <form method="post" action="{% url 'habit_extend_deadline' habit.id %}" class="inline-block">
+          {% csrf_token %}
+          <input type="hidden" name="days" value="5">
+          <button type="submit" class="w-full rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition">+5 days</button>
+        </form>
+        <form method="post" action="{% url 'habit_extend_deadline' habit.id %}" class="inline-block">
+          {% csrf_token %}
+          <input type="hidden" name="days" value="10">
+          <button type="submit" class="w-full rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition">+10 days</button>
+        </form>
+        <form method="post" action="{% url 'habit_extend_deadline' habit.id %}" class="inline-block">
+          {% csrf_token %}
+          <input type="hidden" name="days" value="15">
+          <button type="submit" class="w-full rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition">+15 days</button>
+        </form>
+      </div>
 
       <div class="flex items-center gap-2">
         <form method="post" action="{% url 'habit_complete' habit.id %}" class="flex-1">

@@ -228,6 +228,27 @@ def habit_complete(request, habit_id):
 
 
 @login_required
+def habit_extend_deadline(request, habit_id):
+    """Extend the habit deadline by a selectable number of days."""
+    habit = get_object_or_404(Habit, id=habit_id, user=request.user)
+    if request.method == 'POST':
+        days_value = request.POST.get('days', '').strip()
+        try:
+            days = int(days_value)
+            if days not in (5, 10, 15):
+                raise ValueError
+        except ValueError:
+            messages.error(request, 'Invalid extension period.')
+            return redirect('habit_list')
+
+        base_date = habit.target_date or habit.start_date or timezone.now().date()
+        habit.target_date = base_date + timedelta(days=days)
+        habit.save()
+        messages.success(request, f'Habit deadline extended by {days} days.')
+    return redirect('habit_list')
+
+
+@login_required
 def habit_update(request, habit_id):
     """Update habit progress directly from the habit list."""
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
@@ -312,6 +333,27 @@ def goal_complete(request, goal_id):
         messages.success(request, f'{goal.title} checked in for today!')
     else:
         messages.info(request, f'{goal.title} already checked in today.')
+    return redirect('goal_list')
+
+
+@login_required
+def goal_extend_deadline(request, goal_id):
+    """Extend the goal deadline by a selectable number of days."""
+    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+    if request.method == 'POST':
+        days_value = request.POST.get('days', '').strip()
+        try:
+            days = int(days_value)
+            if days not in (5, 10, 15):
+                raise ValueError
+        except ValueError:
+            messages.error(request, 'Invalid extension period.')
+            return redirect('goal_list')
+
+        base_date = goal.target_date or goal.start_date or timezone.now().date()
+        goal.target_date = base_date + timedelta(days=days)
+        goal.save()
+        messages.success(request, f'Goal deadline extended by {days} days.')
     return redirect('goal_list')
 
 
