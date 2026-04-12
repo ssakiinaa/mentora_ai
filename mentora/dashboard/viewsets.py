@@ -68,16 +68,9 @@ class HabitViewSet(viewsets.ModelViewSet):
         )
         
         if created:
-            habit.last_completed = today
-            habit.update_streak()
-            # Update progress (simplified: based on completions in last 7 days)
-            recent_completions = HabitCompletion.objects.filter(
-                habit=habit,
-                completed_at__gte=today - timezone.timedelta(days=7)
-            ).count()
-            habit.progress = min(100.0, (recent_completions / 7) * 100)
-            habit.save()
-            
+            if habit.record_completion(today):
+                habit.recalc_progress()
+                habit.save()
             return Response({
                 'message': 'Habit completed!',
                 'streak': habit.streak,

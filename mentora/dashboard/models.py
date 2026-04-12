@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -43,21 +45,23 @@ class Habit(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.name}"
 
-    def update_streak(self):
-        """Update streak based on last completion date"""
+    def record_completion(self, completion_date=None):
+        """Record a habit completion and adjust streak based on the previous completion date."""
+        completion_date = completion_date or timezone.now().date()
+        if self.last_completed == completion_date:
+            return False
+
         if self.last_completed:
-            days_since = (timezone.now().date() - self.last_completed).days
-            if days_since == 0:
-                # Completed today, increment streak
-                self.streak += 1
-            elif days_since == 1:
-                # Completed yesterday, maintain streak
-                pass
+            days_since = (completion_date - self.last_completed).days
+            if days_since == 1:
+                self.streak = max(1, self.streak + 1)
             else:
-                # Streak broken
                 self.streak = 1
         else:
-            self.streak = 0
+            self.streak = 1
+
+        self.last_completed = completion_date
+        return True
 
     def get_expected_days(self, until=None):
         until = until or timezone.now().date()

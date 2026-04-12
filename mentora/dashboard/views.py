@@ -218,9 +218,9 @@ def habit_complete(request, habit_id):
     )
     
     if created:
-        habit.last_completed = today
-        habit.update_streak()
-        habit.recalc_progress()
+        if habit.record_completion(today):
+            habit.recalc_progress()
+            habit.save()
         messages.success(request, f'{habit.name} completed! Streak: {habit.streak} days')
     else:
         messages.info(request, f'{habit.name} already completed today')
