@@ -103,6 +103,7 @@ def ai_chat_reply(request):
         return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
     user_question = request.POST.get('message', '').strip()
+    tone_mode = request.POST.get('tone_mode', 'empathy')
     if not user_question:
         return JsonResponse({'error': 'Please ask a question to continue the chat.'}, status=400)
 
@@ -134,7 +135,7 @@ def ai_chat_reply(request):
             context_lines.append(f'- {mood.date}: {mood.mood_emoji} {mood.mood_scale}/10')
 
     user_context = '\n'.join(context_lines)
-    ai_reply = ai_core.generate_coaching_response(user_question, user_context)
+    ai_reply = ai_core.generate_coaching_response(user_question, user_context, tone_mode)
 
     return JsonResponse({'reply': ai_reply})
 

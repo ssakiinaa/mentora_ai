@@ -99,6 +99,15 @@
           <p class="text-[var(--text-secondary)]">Type a question below and get constructive suggestions that reflect your recent habits, goals, journals, and mood.</p>
         </div>
 
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-[var(--text-primary)] mb-2">Choose coaching tone</label>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="tone-life" class="px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] transition focus:outline-none">Emotional Coach</button>
+            <button type="button" id="tone-success" class="px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] transition focus:outline-none">Performance Coach</button>
+          </div>
+          <input type="hidden" name="tone_mode" id="tone-mode" value="empathy">
+        </div>
+
         <div id="chat-messages" class="flex flex-col flex-1 overflow-y-auto space-y-4 mb-6 max-h-[60vh] pr-2">
           <div class="rounded-3xl bg-[var(--bg-secondary)] p-5 border border-[var(--border-color)] shadow-sm">
             <p class="font-semibold text-[var(--accent-primary)]">Mentora AI</p>
@@ -127,10 +136,32 @@
   const chatInput = document.getElementById('chat-input');
   const chatMessages = document.getElementById('chat-messages');
   const chatStatus = document.getElementById('chat-status');
+  const toneModeInput = document.getElementById('tone-mode');
+  const toneLifeBtn = document.getElementById('tone-life');
+  const toneSuccessBtn = document.getElementById('tone-success');
+
+  function setToneMode(mode) {
+    toneModeInput.value = mode;
+    if (mode === 'performance') {
+      toneSuccessBtn.classList.add('bg-[var(--accent-primary)]', 'text-white', 'border-transparent');
+      toneSuccessBtn.classList.remove('bg-[var(--bg-secondary)]', 'text-[var(--text-primary)]');
+      toneLifeBtn.classList.remove('bg-[var(--accent-primary)]', 'text-white', 'border-transparent');
+      toneLifeBtn.classList.add('bg-[var(--bg-secondary)]', 'text-[var(--text-primary)]');
+    } else {
+      toneLifeBtn.classList.add('bg-[var(--accent-primary)]', 'text-white', 'border-transparent');
+      toneLifeBtn.classList.remove('bg-[var(--bg-secondary)]', 'text-[var(--text-primary)]');
+      toneSuccessBtn.classList.remove('bg-[var(--accent-primary)]', 'text-white', 'border-transparent');
+      toneSuccessBtn.classList.add('bg-[var(--bg-secondary)]', 'text-[var(--text-primary)]');
+    }
+  }
+
+  toneLifeBtn.addEventListener('click', () => setToneMode('empathy'));
+  toneSuccessBtn.addEventListener('click', () => setToneMode('performance'));
+  setToneMode('empathy');
 
   function appendMessage(role, text) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'rounded-3xl p-5 shadow-sm self-end';
+    wrapper.className = 'rounded-3xl p-5 shadow-sm';
     wrapper.style.color = 'var(--text-primary)';
     wrapper.style.backgroundColor = role === 'user'
       ? (document.documentElement.classList.contains('dark') ? '#0f172a' : '#f8fafc')
@@ -138,7 +169,7 @@
     wrapper.style.border = '1px solid ' + (role === 'user'
       ? (document.documentElement.classList.contains('dark') ? '#334155' : '#d1d5db')
       : getComputedStyle(document.documentElement).getPropertyValue('--border-color'));
-    wrapper.style.alignSelf = 'flex-end';
+    wrapper.style.alignSelf = role === 'user' ? 'flex-end' : 'flex-start';
 
     const header = document.createElement('p');
     header.className = 'font-semibold';
@@ -154,6 +185,40 @@
     wrapper.appendChild(message);
     chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  async function appendTypingMessage(role, text) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'rounded-3xl p-5 shadow-sm';
+    wrapper.style.color = 'var(--text-primary)';
+    wrapper.style.backgroundColor = role === 'user'
+      ? (document.documentElement.classList.contains('dark') ? '#0f172a' : '#f8fafc')
+      : getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary');
+    wrapper.style.border = '1px solid ' + (role === 'user'
+      ? (document.documentElement.classList.contains('dark') ? '#334155' : '#d1d5db')
+      : getComputedStyle(document.documentElement).getPropertyValue('--border-color'));
+    wrapper.style.alignSelf = role === 'user' ? 'flex-end' : 'flex-start';
+
+    const header = document.createElement('p');
+    header.className = 'font-semibold';
+    header.style.color = 'var(--accent-primary)';
+    header.textContent = role === 'user' ? 'You' : 'Mentora AI';
+
+    const message = document.createElement('p');
+    message.className = 'mt-3 whitespace-pre-wrap';
+    message.style.color = 'var(--text-primary)';
+    message.textContent = '';
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(message);
+    chatMessages.appendChild(wrapper);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    for (let i = 0; i < text.length; i += 1) {
+      message.textContent += text.charAt(i);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
   }
 
   chatInput.addEventListener('keydown', (event) => {
@@ -188,7 +253,7 @@
       if (!response.ok) {
         appendMessage('assistant', data.error || 'Sorry, I could not process that right now.');
       } else {
-        appendMessage('assistant', data.reply || 'I could not generate a response.');
+        await appendTypingMessage('assistant', data.reply || 'I could not generate a response.');
       }
     } catch (error) {
       appendMessage('assistant', 'A network error occurred. Please try again.');
