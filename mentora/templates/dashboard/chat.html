@@ -6,7 +6,10 @@
 <div class="min-h-screen">
   <div class="mb-8">
     <div class="flex flex-col lg:flex-row gap-6 items-start">
+
+      <!-- LEFT PANEL (UNCHANGED) -->
       <div class="flex-1 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] shadow-lg p-6">
+        <!-- your existing content stays SAME -->        
         <div class="mb-6">
           <h1 class="text-3xl font-bold text-[var(--text-primary)] mb-2">AI Coaching</h1>
           <p class="text-[var(--text-secondary)]">Talk to your AI coach about your goals, habits, and progress. The model uses your recent entries to suggest constructive next steps and keep you on track.</p>
@@ -96,7 +99,7 @@
           <p class="text-[var(--text-secondary)]">Type a question below and get constructive suggestions that reflect your recent habits, goals, journals, and mood.</p>
         </div>
 
-        <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 mb-6 max-h-[60vh] pr-2">
+        <div id="chat-messages" class="flex flex-col flex-1 overflow-y-auto space-y-4 mb-6 max-h-[60vh] pr-2">
           <div class="rounded-3xl bg-[var(--bg-secondary)] p-5 border border-[var(--border-color)] shadow-sm">
             <p class="font-semibold text-[var(--accent-primary)]">Mentora AI</p>
             <p class="mt-3 text-[var(--text-secondary)]">Hi! I’m here to help you discuss your goals in detail and suggest constructive actions. What would you like to talk about today?</p>
@@ -127,16 +130,24 @@
 
   function appendMessage(role, text) {
     const wrapper = document.createElement('div');
-    wrapper.className = role === 'user'
-      ? 'rounded-3xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-5 shadow-sm self-end text-[var(--text-primary)]'
-      : 'rounded-3xl bg-[var(--bg-secondary)] border border-[var(--border-color)] p-5 shadow-sm';
+    wrapper.className = 'rounded-3xl p-5 shadow-sm self-end';
+    wrapper.style.color = 'var(--text-primary)';
+    wrapper.style.backgroundColor = role === 'user'
+      ? (document.documentElement.classList.contains('dark') ? '#0f172a' : '#f8fafc')
+      : getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary');
+    wrapper.style.border = '1px solid ' + (role === 'user'
+      ? (document.documentElement.classList.contains('dark') ? '#334155' : '#d1d5db')
+      : getComputedStyle(document.documentElement).getPropertyValue('--border-color'));
+    wrapper.style.alignSelf = 'flex-end';
 
     const header = document.createElement('p');
-    header.className = 'font-semibold text-[var(--accent-primary)]';
+    header.className = 'font-semibold';
+    header.style.color = 'var(--accent-primary)';
     header.textContent = role === 'user' ? 'You' : 'Mentora AI';
 
     const message = document.createElement('p');
-    message.className = 'mt-3 text-[var(--text-secondary)] whitespace-pre-wrap';
+    message.className = 'mt-3 whitespace-pre-wrap';
+    message.style.color = 'var(--text-primary)';
     message.textContent = text;
 
     wrapper.appendChild(header);
@@ -145,16 +156,27 @@
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
+  chatInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (typeof chatForm.requestSubmit === 'function') {
+        chatForm.requestSubmit();
+      } else {
+        chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      }
+    }
+  });
+
   chatForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const message = chatInput.value.trim();
     if (!message) return;
 
+    const formData = new FormData(chatForm);
+
     appendMessage('user', message);
     chatInput.value = '';
     chatStatus.textContent = 'Thinking...';
-
-    const formData = new FormData(chatForm);
 
     try {
       const response = await fetch('{% url "ai_chat_reply" %}', {
