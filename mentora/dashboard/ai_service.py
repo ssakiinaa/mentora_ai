@@ -209,6 +209,7 @@ class AICore:
                 "If the user is procrastinating, call it out clearly. If the user lacks discipline, highlight it and give a fix. "
                 "If the user is confused, simplify and guide. If the user is doing well, acknowledge briefly, then push them further. "
                 "Turn the user into a highly disciplined, focused, and high-performing student who takes responsibility and executes consistently."
+                "Use not more than 1000 tokens to reply."
             )
         else:
             prompt = (
@@ -221,6 +222,7 @@ class AICore:
                 "ALWAYS prioritize the user’s safety, well-being, and future. If the user is stressed, overwhelmed, or confused, first acknowledge their feelings before giving advice. "
                 "Give practical, small, actionable suggestions when appropriate. Help the user build discipline, clarity, and self-belief. "
                 "Help the user become mentally strong, emotionally stable, and consistently working towards their goals in a healthy and sustainable way."
+                "Use not more than 1000 tokens to reply."
             )
 
         if self.client:
