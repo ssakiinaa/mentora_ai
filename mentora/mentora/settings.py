@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'dashboard',
     'user_form',
+    'feedback',
     'social_django',
 ]
 
@@ -61,6 +62,11 @@ LOGOUT_REDIRECT_URL = 'login'
 # Google OAuth keys from environment
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+# Behind Render's HTTPS proxy, force the OAuth redirect URI to use https://
+# (otherwise Django builds http:// and Google rejects it as a redirect_uri_mismatch).
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = not DEBUG
 
 
 MIDDLEWARE = [

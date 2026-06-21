@@ -38,6 +38,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('users/', include('users.urls')),
     path('forms/', include('user_form.urls')),
+    path('feedback/', include('feedback.urls')),
     path('auth/', include('social_django.urls', namespace='social')),
     path('', include(router.urls)),  # API routes
 ]
